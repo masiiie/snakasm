@@ -181,6 +181,7 @@ delay:
   push ebx
   push esi
   push edi
+  
 
   ; Check if timer is set. Skip high bits.
   mov ebx, [ebp + 8] ; timer
