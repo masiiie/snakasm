@@ -30,5 +30,7 @@
 %define KEY.F9    0x43
 %define KEY.F10   0x44
 
+%define KEY.TAB   0x0F
+
 
 %endif ; KEYBOARD_MAC

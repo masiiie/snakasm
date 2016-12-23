@@ -31,9 +31,9 @@ puntuacion1 dd 0
 global puntuacion2
 puntuacion2 dd 0
 global nivel
-nivel dd 3
+nivel dd 1
 global nivelSelec
-nivelSelec dd 3
+nivelSelec dd 1
 global puntuacionmax
 puntuacionmax dd 0
 global primerJuego
@@ -44,6 +44,8 @@ global Velocidad
 Velocidad dd 200
 global end
 end dd 0
+global descuento
+descuento dd 0
 
 section .text
 
@@ -90,6 +92,36 @@ extern dificultad
   add esp, 2
 %endmacro
 
+
+%macro ActualizarEstadisticas 0
+      push dword[vidas2]
+    push dword[puntuacion2]
+    push dword[nivel]
+    push dword[puntuacion1]
+    push dword[puntuacionmax]
+    push dword[vidas1]
+    call EscribirEstadisticas
+    add esp,24
+%endmacro
+
+%macro PrintScores 2
+  pushad
+  ;escribir el highscore
+  mov edi, 0xB8000
+  add edi, %1;544;lugar de memoria de la puntuacion
+  mov ecx, 5;ctdad de numeros de la puntuacion
+  mov ebx, 10;para obtener cada digito de la puntuacion
+  mov eax, %2;[puntuacionmax]
+  %%division:
+  xor edx,edx
+  div ebx
+  add edx, 48;para pintar el caracter de la cifra
+  mov [edi], dl;usamos dl porque el resto es de una cifra
+  sub edi, dword 2;para pintar para atras
+  loop %%division
+  popad
+%endmacro
+
 global game
 game:
   ; Initialize game
@@ -97,7 +129,6 @@ game:
   ; Calibrate the timing
   call calibrate
   ; Snakasm main loop
-
 
 cmp dword[MenuInicialActivo],dword 1
 jne _STARTGAME
@@ -115,7 +146,6 @@ jne _STARTGAME
   popad
 
   _STARTGAME:
-
   
   call inicio 
 
@@ -135,6 +165,9 @@ jne _STARTGAME
       je .input
 
       pop eax ;este pop es para restaurar el resultado de eax ya que delay lo cambia
+
+      call Comprueba_Descuento
+      PrintScores 1550,[descuento]
 
       cmp [end], byte 1;comprueba si perdiste variable (end)
       je _Perdiste
@@ -170,19 +203,11 @@ jne _STARTGAME
 
       pop eax
 
-    push dword[vidas2]
-    push dword[puntuacion2]
-    push dword[nivel]
-    push dword[puntuacion1]
-    push dword[puntuacionmax]
-    push dword[vidas1]
-    call EscribirEstadisticas
-    add esp,24
+      ActualizarEstadisticas
 
       jmp game.loop
 
-      _Perdiste:
-        
+      _Perdiste:        
 
       ;anunciar que perdiste
       push 1120
@@ -224,6 +249,8 @@ jne _STARTGAME
       push INSTRUCC
       call printString
       add esp, 8
+
+      mov [descuento],dword 0
   
 
       jmp game.loop
@@ -238,6 +265,45 @@ jne _STARTGAME
        call AnimacionCambioDePantalla
 
       jmp _STARTGAME
+
+;comprueba si no se ha comido nada en 15 segundos, si esto se 
+;cumple descuenta 1 a la puntuacion de ambas serpientes,
+;cada 7.5 segundos hasta que se como, si su puntuacion es 0 no descuenta
+  Comprueba_Descuento:
+      push eax
+      push ebx
+        mov eax,[descuento]
+        mov ebx,[Velocidad]
+        add eax,ebx
+        cmp eax,15000
+        jbe NoDescuenta
+          
+          mov ebx,[puntuacion1]
+          
+          cmp ebx,0
+          je NoDescuenta
+          dec ebx
+          mov [puntuacion1],ebx
+          shr eax,1  
+
+          NoDescuenta:
+
+          mov ebx,[puntuacion2]
+          
+          cmp ebx,0
+          jbe NoDescuenta1
+          dec ebx
+          mov [puntuacion2],ebx
+          shr eax,1
+
+        NoDescuenta1:
+
+        mov [descuento],eax
+        ActualizarEstadisticas
+
+      pop ebx
+      pop eax
+      ret
 
 
 
@@ -341,8 +407,6 @@ pushad
     add esp, 2 ; free the stack
     popad
     ret
-
-
 
 ;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-
 GLOBAL ArmandoParedes
@@ -471,7 +535,7 @@ inicio:
   call FrutaValida;el resultado esta en edx
   mov [ecx + edx], bx
   pop edx
-  mov [FinDJuego],byte 1
+  mov [FinDJuego],byte 10
   mov [end],dword 0
 
   cmp [dificultad],dword 1

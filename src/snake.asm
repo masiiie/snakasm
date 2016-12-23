@@ -21,6 +21,7 @@ extern vidas2
 extern puntuacion2
 extern puntuacion1
 extern supervivencia
+extern descuento
 
 
 
@@ -98,6 +99,11 @@ Mover:
   ;desde aqui hasta el final es ponerle la cabeza al final al gusano
   comio:
     push edx
+
+    xor edx,edx
+    mov [descuento],edx
+    
+
     mov edx, [Velocidad]
     sub edx, 4
     mov [Velocidad], edx
@@ -109,8 +115,9 @@ Mover:
     cmp edx, dword[puntuacionmax]
     jbe NoRecord
     mov edx, [_puntuacion_]   
-    mov [puntuacionmax], edx 
+    mov [puntuacionmax], edx
 
+    
     NoRecord:
     pop edx
 
