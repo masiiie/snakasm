@@ -18,19 +18,22 @@ INSTRUCC db  "PRESIONA (R) PARA REINICIAR",0
 pausa dd 1
 MenuInicialActivo dd 1
 
+global supervivencia
+supervivencia db 0
 global CantJugadores
 CantJugadores dd 1
 global vidas1
 vidas1 dd 5
 global vidas2
 vidas2 dd 5
-
 global puntuacion1
 puntuacion1 dd 0
 global puntuacion2
 puntuacion2 dd 0
 global nivel
-nivel dd 1
+nivel dd 3
+global nivelSelec
+nivelSelec dd 3
 global puntuacionmax
 puntuacionmax dd 0
 global primerJuego
@@ -67,6 +70,7 @@ extern printString
 extern _puntuacion_
 extern Draw_Image
 extern AnimacionCambioDePantalla
+extern dificultad
 
 ; Bind a key to a procedure
 
@@ -86,27 +90,6 @@ extern AnimacionCambioDePantalla
   add esp, 2
 %endmacro
 
-
-%macro PrintScores 2
-  pushad
-  ;escribir el highscore
-  mov edi, 0xB8000
-  add edi, %1;544;lugar de memoria de la puntuacion
-  mov ecx, 5;ctdad de numeros de la puntuacion
-  mov ebx, 10;para obtener cada digito de la puntuacion
-  mov eax, %2;[puntuacionmax]
-  %%division:
-  xor edx,edx
-  div ebx
-  add edx, 48;para pintar el caracter de la cifra
-  mov [edi], dl;usamos dl porque el resto es de una cifra
-  sub edi, dword 2;para pintar para atras
-  loop %%division
-  popad
-%endmacro
-
-
-
 global game
 game:
   ; Initialize game
@@ -121,6 +104,7 @@ jne _STARTGAME
   
   pushad
   _MenuInicial:;va a estar en el ciclo mientras este activo el menu inicial
+
 
   call Draw_Image
 
@@ -345,7 +329,6 @@ pushad
 
     bind KEY.R,game
 
-
     bind KEY.W, _w
     bind KEY.A, _a
     bind KEY.S, _s
@@ -354,18 +337,12 @@ pushad
     bind KEY.P, Pausa
     bind KEY.ENTER,salir
 
-    bind KEY.ESC,EscMenuInicial
-    
-
+   
     add esp, 2 ; free the stack
     popad
     ret
 
 
-EscMenuInicial:
-  mov [MenuInicialActivo],dword 1
-  call AnimacionCambioDePantalla
-  jmp game
 
 ;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-
 GLOBAL ArmandoParedes
@@ -468,48 +445,25 @@ _Nivel:
 ret 
 ;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-
 
-reset:
-  mov [nivel], dword 1
-  mov [vidas1], dword 5
-  mov [vidas2], dword 5
-  mov [Velocidad], dword 200  
-  mov [puntuacion1], dword 0
-  mov [puntuacion2], dword 0
-
 inicio:
-
-  FILL_SCREEN BG.GRAY
-  call _Nivel  
-   
+     
   cmp [CantJugadores],dword 2
   jne _UnJugador 
 
-  push worm2
-  call LimpiarWorm
-  add esp, 4
-  
-  mov [direccion2], dword 2
-
-  mov [worm2], dword 1660
-  mov [worm2 + 4], dword 1662
-  mov [worm2 + 8], dword 1664
-  mov [worm2 + 12], dword 1666
+  call PreparaWorm2
 
   _UnJugador:
   
-  push worm
-  call LimpiarWorm
-  add esp, 4
-
-  mov [direccion], dword 2
-
-  mov [worm], dword 1500
-  mov [worm + 4], dword 1502
-  mov [worm + 8], dword 1504
-  mov [worm + 12], dword 1506
+  call PreparaWorm1
 
 
+  ;a partir de aqui para superviviencia
+
+  FILL_SCREEN BG.GRAY
   call ArmandoParedes
+
+
+  call _Nivel  
 
   mov ecx, 0xB8000
   mov bx, 30|FG.BLUE|BG.GRAY
@@ -519,22 +473,55 @@ inicio:
   pop edx
   mov [FinDJuego],byte 1
   mov [end],dword 0
-  
+
+  cmp [dificultad],dword 1
+  je facil
+  cmp [dificultad],dword 2
+  je medio
+  ;dificil
+  mov [Velocidad],dword 70
+  ret
+  facil:
+  mov [Velocidad],dword 200
+  ret
+  medio:
+  mov [Velocidad],dword 100
+
   ret
 
 Pausa:
     mov [pausa],dword 1    
 
-    pausa1:
-    
-          call get_input
-         
-    cmp [pausa],dword 1
-    je pausa1
+    pausa1:    
+        call get_input         
+          cmp [pausa],dword 1
+          je pausa1
   
   salir:
   mov [pausa],dword 2 
    ret
 ;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-;-
  
- 
+ PreparaWorm2:
+      push worm2
+      call LimpiarWorm
+      add esp, 4
+  
+       mov [direccion2], dword 2
+
+       mov [worm2], dword 1660
+       mov [worm2 + 4], dword 1662
+       mov [worm2 + 8], dword 1664
+     mov [worm2 + 12], dword 1666
+    ret
+
+ PreparaWorm1:
+     push worm
+     call LimpiarWorm
+     add esp, 4
+     mov [direccion], dword 2
+     mov [worm], dword 1500
+     mov [worm + 4], dword 1502
+     mov [worm + 8], dword 1504
+     mov [worm + 12], dword 1506
+     ret

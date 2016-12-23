@@ -19,5 +19,16 @@
 %define KEY.P    0x19
 %define KEY.ESC  0x01
 
+%define KEY.F1    0x3B
+%define KEY.F2    0x3C
+%define KEY.F3    0x3D
+%define KEY.F4    0x3E
+%define KEY.F5    0x3F
+%define KEY.F6    0x40
+%define KEY.F7    0x41
+%define KEY.F8    0x42
+%define KEY.F9    0x43
+%define KEY.F10   0x44
+
 
 %endif ; KEYBOARD_MAC

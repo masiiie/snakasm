@@ -12,6 +12,7 @@ extern FinDJuego
 extern end
 extern Velocidad
 extern nivel
+extern nivelSelec
 extern puntuacionmax
 extern primerJuego
 extern CantJugadores ;compruebo la contidad de jugadores y en dependencia de esto se q quien mover
@@ -19,6 +20,7 @@ extern vidas1
 extern vidas2
 extern puntuacion2
 extern puntuacion1
+extern supervivencia
 
 
 
@@ -74,7 +76,7 @@ Mover:
     jmp buscador
   salir2:
   pop eax
-  add ebx,[ebp+12] ;[direccion]  ;el valor de la direccion a la que tiene  moverse
+  add ebx,[ebp+12] ;[direccion]  ;el valor de la direccion a la que tiene que moverse
  
   mov edx, 0xB8000
   cmp [edx + ebx], byte 30 ;comprobando si hay comida aqui, pusimos 30 por poner algo para la comida
@@ -97,7 +99,7 @@ Mover:
   comio:
     push edx
     mov edx, [Velocidad]
-    sub edx, 3
+    sub edx, 4
     mov [Velocidad], edx
 
     mov edx, [ebp+16];[puntuacion]; aqui paso la puntuacion para que la aumente ...
@@ -116,10 +118,12 @@ Mover:
     push eax
     push edx
 
+    cmp [supervivencia],byte 1
+    je salto 
     mov ebx,[FinDJuego]
     dec ebx
-    mov [FinDJuego],ebx   
-    
+    mov [FinDJuego],ebx
+    salto:
      ; pongo una comida nueva en el mapa
     mov bx, 30|FG.BLUE|BG.GRAY
 
@@ -169,9 +173,10 @@ Mover:
     jne tengovidas
 
     mov [_puntuacion_], dword 0
-    mov [nivel], dword 1
+    mov edx,[nivelSelec]
+    mov [nivel], edx
     mov [vidas], dword 5
-    mov [Velocidad], dword 100
+    mov [Velocidad], dword 200
 
     tengovidas:
     pop edx

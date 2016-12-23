@@ -47,15 +47,19 @@ xor ecx,ecx
 popad
 %endmacro
 
+
+
+
 global nivel1
 nivel1:	
 
-  ;Obstaculo 1000, 5, 3, 7
+   
   
   ret
 
 global nivel2
 nivel2:
+	pushad
 	mov ebx, 0xB8000
 	mov dx, 92|FG.BLACK|BG.GRAY
 	mov ecx, 1160
@@ -71,10 +75,13 @@ nivel2:
 	add ecx, 158
 	cmp ecx, 3500
 	jb sigue2
+	popad
+
 ret
 
 global nivel3
 nivel3:
+	pushad
 	mov ebx, 0xB8000
 	mov dx, 7|FG.GREEN|BG.BLACK
 	mov ecx, 1200
@@ -90,10 +97,12 @@ nivel3:
 	add ecx, -2
 	cmp ecx, 2284
 	ja sigue4
+	popad
 ret
 
 global nivel4
 nivel4:
+pushad
 	mov ebx, 0xB8000
 	mov dx, 7|BG.BLACK|FG.GREEN
 	mov ecx, 1242
@@ -115,6 +124,7 @@ nivel4:
 	add ecx, -2
 	cmp ecx, 2284
 	ja sigue7
+	popad
 ret
 
 global nivel5
@@ -128,7 +138,7 @@ nivel6:
 	Obstaculo 1456, 1, 15, 7
 	Obstaculo 674, 1, 15, 7
 	Obstaculo 1492, 1, 15, 7
-	Obstaculo 710, 1, 15, 7
+	Obstaculo 720, 1, 15, 7
 	Obstaculo 1528, 1, 15, 7
 	Obstaculo 746, 1, 15, 7 
 	Obstaculo 1564, 1, 15, 7
@@ -162,15 +172,13 @@ ret
 
 global nivel8
 nivel8:
-	pusha
 	Obstaculo 1456, 1, 10, 7
 	Obstaculo 3056, 19, 1, 7
 	Obstaculo 1492, 1, 10, 7
 	Obstaculo 1548, 1, 10, 7
 	Obstaculo 1584, 1, 10, 7
 	Obstaculo 3148, 19, 1, 7
-	Obstaculo 1492, 29, 1, 7
-	popa
+	Obstaculo 1492, 29, 1, 7	
 ret
 
 global nivel9
@@ -193,13 +201,12 @@ ret
 
 global nivel10
 nivel10:
-	pusha
 	Obstaculo 1400, 60, 2, 7
 	Obstaculo 2900, 60, 2, 7
 	Obstaculo 2100, 60, 2, 7
 	Obstaculo 2100, 4, 5, 7
 	Obstaculo 1412, 4, 5, 7
-	popa
+	
 ret
 
 
