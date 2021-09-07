@@ -1,6 +1,6 @@
 # Snakasm
 
-Integrantes y grupo.
+Masiel Villalba Carmenate **C-212**
 
 Describir todo lo que se realizó en el proyecto, dejando claro cuáles fueron las características que se implementaron.
 
