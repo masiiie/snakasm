@@ -94,7 +94,7 @@ extern dificultad
 
 
 %macro ActualizarEstadisticas 0
-      push dword[vidas2]
+    push dword[vidas2]
     push dword[puntuacion2]
     push dword[nivel]
     push dword[puntuacion1]
@@ -104,23 +104,7 @@ extern dificultad
     add esp,24
 %endmacro
 
-%macro PrintScores 2
-  pushad
-  ;escribir el highscore
-  mov edi, 0xB8000
-  add edi, %1;544;lugar de memoria de la puntuacion
-  mov ecx, 5;ctdad de numeros de la puntuacion
-  mov ebx, 10;para obtener cada digito de la puntuacion
-  mov eax, %2;[puntuacionmax]
-  %%division:
-  xor edx,edx
-  div ebx
-  add edx, 48;para pintar el caracter de la cifra
-  mov [edi], dl;usamos dl porque el resto es de una cifra
-  sub edi, dword 2;para pintar para atras
-  loop %%division
-  popad
-%endmacro
+
 
 global game
 game:
@@ -167,7 +151,6 @@ jne _STARTGAME
       pop eax ;este pop es para restaurar el resultado de eax ya que delay lo cambia
 
       call Comprueba_Descuento
-      PrintScores 1550,[descuento]
 
       cmp [end], byte 1;comprueba si perdiste variable (end)
       je _Perdiste
